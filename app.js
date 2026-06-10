@@ -317,7 +317,8 @@ function handleRouting() {
 
   if (showAppShell) {
     sidebar.style.display = 'flex';
-    mobileNav.style.display = 'flex';
+    mobileNav.classList.add('mobile-nav-bar--visible');
+    document.querySelector('.main-content').classList.add('has-mobile-nav');
     navbar.style.display = 'none';
 
     // Update sidebar profiles
@@ -325,7 +326,8 @@ function handleRouting() {
     document.getElementById('sidebar-username-lbl').textContent = state.currentUser.fullname;
   } else {
     sidebar.style.display = 'none';
-    mobileNav.style.display = 'none';
+    mobileNav.classList.remove('mobile-nav-bar--visible');
+    document.querySelector('.main-content').classList.remove('has-mobile-nav');
     navbar.style.display = 'flex';
 
     // Adjust navbar button visibility
