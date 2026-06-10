@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinTrack — Personal Finance Management</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Confetti Canvas for completed goals -->
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+  <!-- Global Toast Alerts Stack -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main View Wrapper -->
+  <div class="app-container">
+
+    <!-- App Sidebar: Hidden on landing, auth, onboarding -->
+    <nav id="app-sidebar" class="sidebar" style="display: none;" aria-label="Main Navigation">
+      <div class="sidebar-brand">
+        <a href="#/dashboard" class="brand">
+          <span class="brand-icon">⚡</span>
+          <span>FinTrack</span>
+        </a>
+      </div>
+      <div class="sidebar-menu">
+        <a href="#/dashboard" class="sidebar-link" id="sidebar-dashboard">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#/transactions" class="sidebar-link" id="sidebar-transactions">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+          <span>Transactions</span>
+        </a>
+        <a href="#/budget" class="sidebar-link" id="sidebar-budget">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>Budget</span>
+        </a>
+        <a href="#/goals" class="sidebar-link" id="sidebar-goals">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          <span>Goals</span>
+        </a>
+        <a href="#/reports" class="sidebar-link" id="sidebar-reports">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
+          <span>Reports</span>
+        </a>
+        <a href="#/settings" class="sidebar-link" id="sidebar-settings">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <span>Settings</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <img src="" alt="User Avatar" class="sidebar-avatar" id="sidebar-avatar-img">
+        <div class="sidebar-user-info">
+          <div class="sidebar-username" id="sidebar-username-lbl">Alex Johnson</div>
+          <div class="sidebar-role">Finance Planner</div>
+        </div>
+        <button id="sidebar-logout-btn" class="action-btn delete-btn" title="Logout" aria-label="Logout">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+
+      <!-- Top Navigation Bar: Visible on landing, login, signup, about -->
+      <header id="app-navbar" class="navbar">
+        <div class="navbar-inner">
+          <a href="#/index" class="brand">
+            <span class="brand-icon">⚡</span>
+            <span>FinTrack</span>
+          </a>
+          <nav class="nav-links" id="navbar-links">
+            <a href="#/about" class="nav-link" id="nav-about">About</a>
+            <a href="#/index#features" class="nav-link">Features</a>
+          </nav>
+          <div class="nav-actions">
+            <!-- Theme Toggle Sun/Moon -->
+            <button id="theme-toggle-btn" class="theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+              <span id="theme-toggle-icon">🌙</span>
+            </button>
+            <div id="nav-auth-buttons" class="nav-actions">
+              <a href="#/login" class="btn btn-ghost">Login</a>
+              <a href="#/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+            <div id="nav-user-actions" style="display: none;">
+              <a href="#/dashboard" class="btn btn-secondary">Dashboard</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ==========================================
+           1. LANDING PAGE
+           ========================================== -->
+      <section id="view-landing" class="view-section active">
+        <div class="landing-hero">
+          <h1 class="landing-title text-gradient">Master Your Money</h1>
+          <p class="landing-tagline">Track budget goals, map out expenses, and monitor bank accounts automatically. Take back control of your financial destiny today.</p>
+          
+          <!-- Animated counters -->
+          <div class="landing-counters">
+            <div class="counter-item">
+              <div class="counter-value" id="counter-users" data-target="15420">0</div>
+              <div class="counter-label">Users Registered</div>
+            </div>
+            <div class="counter-item">
+              <div class="counter-value" id="counter-funds" data-target="4580000">₹0</div>
+              <div class="counter-label">Funds Tracked</div>
+            </div>
+            <div class="counter-item">
+              <div class="counter-value" id="counter-goals" data-target="1280">0</div>
+              <div class="counter-label">Goals Met</div>
+            </div>
+          </div>
+
+          <div class="landing-ctas">
+            <a href="#/signup" class="btn btn-primary">Get Started Free</a>
+            <a href="#/about" class="btn btn-secondary">Learn More</a>
+          </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="landing-features" id="features">
+          <div class="section-header">
+            <h2>Track Effortlessly</h2>
+            <p>Everything you need to succeed with personal budgets and wallets in one responsive dashboard.</p>
+          </div>
+          <div class="features-grid">
+            <div class="card feature-card">
+              <div class="feature-icon-box">📊</div>
+              <h3>Budget Allocation</h3>
+              <p>Allocate funds to specific categories. Visually inspect limits and get warning toasts when thresholds are crossed.</p>
+            </div>
+            <div class="card feature-card">
+              <div class="feature-icon-box">💳</div>
+              <h3>Account Aggregation</h3>
+              <p>Add cash cards, bank savings, and e-wallets. Monitor all balances in a unified portfolio statement.</p>
+            </div>
+            <div class="card feature-card">
+              <div class="feature-icon-box">🎯</div>
+              <h3>Financial Goals</h3>
+              <p>Set targets for holidays, devices, or rainy day funds. Allocate deposits directly to fuel progress bar indicators.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review Carousel -->
+        <div class="landing-testimonials">
+          <div class="section-header">
+            <h2>Trusted by Thousands</h2>
+            <p>Read what our members say about using FinTrack for budget control.</p>
+          </div>
+          <div class="carousel-container">
+            <div class="carousel-track" id="carousel-track">
+              <!-- Slide 1 -->
+              <div class="carousel-slide">
+                <p class="review-text">"FinTrack has totally changed how I organize my savings accounts. The category alerts saved me ₹5,000 in my first month!"</p>
+                <p class="review-author">— Rajesh Kumar</p>
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+              </div>
+              <!-- Slide 2 -->
+              <div class="carousel-slide">
+                <p class="review-text">"I love the clean interface and the reports chart. Vanilla JS routing feels super snappy, and dark mode looks beautiful."</p>
+                <p class="review-author">— Samantha Smith</p>
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+              </div>
+              <!-- Slide 3 -->
+              <div class="carousel-slide">
+                <p class="review-text">"The goals feature kept me focused on my Emergency Fund. Completing it triggered a cute confetti celebration!"</p>
+                <p class="review-author">— Rohan Das</p>
+                <div class="review-stars">⭐⭐⭐⭐⭐</div>
+              </div>
+            </div>
+            <div class="carousel-dots" id="carousel-dots">
+              <div class="carousel-dot active" data-slide="0"></div>
+              <div class="carousel-dot" data-slide="1"></div>
+              <div class="carousel-dot" data-slide="2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           2. AUTHENTICATION PAGES (/login & /signup)
+           ========================================== -->
+      <section id="view-login" class="view-section">
+        <div class="auth-wrapper">
+          <div class="card auth-card glow">
+            <div class="auth-header">
+              <h2>Welcome Back</h2>
+              <p>Enter your details to sign in to your dashboard</p>
+            </div>
+            <form id="login-form" novalidate>
+              <div class="form-group">
+                <label for="login-identifier" class="form-label">Email or Username</label>
+                <input type="text" id="login-identifier" class="form-input" placeholder="alexj or alex@example.com">
+                <div class="form-error" id="login-identifier-error"></div>
+              </div>
+              <div class="form-group">
+                <label for="login-password" class="form-label">Password</label>
+                <div class="input-icon-wrapper">
+                  <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+                  <button type="button" class="input-icon-btn toggle-password-btn" data-target="login-password">👁️</button>
+                </div>
+                <div class="form-error" id="login-password-error"></div>
+              </div>
+              
+              <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="login-remember" class="checkbox-input">
+                  <span>Remember Me</span>
+                </label>
+                <a href="#" id="forgot-password-trigger" class="forgot-password-link">Forgot Password?</a>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px;" id="login-submit-btn">
+                <span>Sign In</span>
+              </button>
+            </form>
+            <div class="auth-footer">
+              Don't have an account? <a href="#/signup">Sign Up</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-signup" class="view-section">
+        <div class="auth-wrapper">
+          <div class="card auth-card glow">
+            <div class="auth-header">
+              <h2>Create Account</h2>
+              <p>Sign up to organize and schedule your transactions</p>
+            </div>
+            <form id="signup-form" novalidate>
+              <div class="form-group">
+                <label for="signup-fullname" class="form-label">Full Name</label>
+                <input type="text" id="signup-fullname" class="form-input" placeholder="Alex Johnson">
+                <div class="form-error" id="signup-fullname-error"></div>
+              </div>
+
+              <div class="auth-row-2">
+                <div class="form-group">
+                  <label for="signup-username" class="form-label">Username</label>
+                  <input type="text" id="signup-username" class="form-input" placeholder="alexj">
+                  <div class="form-error" id="signup-username-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="signup-email" class="form-label">Email</label>
+                  <input type="email" id="signup-email" class="form-input" placeholder="alex@example.com">
+                  <div class="form-error" id="signup-email-error"></div>
+                </div>
+              </div>
+
+              <div class="auth-row-2">
+                <div class="form-group">
+                  <label for="signup-mobile" class="form-label">Mobile Number</label>
+                  <input type="tel" id="signup-mobile" class="form-input" placeholder="9876543210">
+                  <div class="form-error" id="signup-mobile-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="signup-dob" class="form-label">Date of Birth</label>
+                  <input type="date" id="signup-dob" class="form-input">
+                  <div class="form-error" id="signup-dob-error"></div>
+                </div>
+              </div>
+
+              <div class="auth-row-2">
+                <div class="form-group">
+                  <label for="signup-password" class="form-label">Password</label>
+                  <div class="input-icon-wrapper">
+                    <input type="password" id="signup-password" class="form-input" placeholder="Min 8 characters">
+                    <button type="button" class="input-icon-btn toggle-password-btn" data-target="signup-password">👁️</button>
+                  </div>
+                  <div class="form-error" id="signup-password-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="signup-confirm" class="form-label">Confirm Password</label>
+                  <div class="input-icon-wrapper">
+                    <input type="password" id="signup-confirm" class="form-input" placeholder="Repeat password">
+                    <button type="button" class="input-icon-btn toggle-password-btn" data-target="signup-confirm">👁️</button>
+                  </div>
+                  <div class="form-error" id="signup-confirm-error"></div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px;" id="signup-submit-btn">
+                <span>Sign Up</span>
+              </button>
+            </form>
+            <div class="auth-footer">
+              Already have an account? <a href="#/login">Login</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           3. ONBOARDING / SETUP WIZARD (/setup)
+           ========================================== -->
+      <section id="view-setup" class="view-section">
+        <div class="setup-wrapper card">
+          <div class="setup-progress-container">
+            <div class="setup-progress-bar">
+              <div class="setup-progress-fill" id="setup-progress-fill"></div>
+            </div>
+            <div class="setup-steps-indicator">
+              <div class="setup-step-node active" id="step-node-1">
+                <div class="setup-step-number">1</div>
+                <span>Profile</span>
+              </div>
+              <div class="setup-step-node" id="step-node-2">
+                <div class="setup-step-number">2</div>
+                <span>Budget</span>
+              </div>
+              <div class="setup-step-node" id="step-node-3">
+                <div class="setup-step-number">3</div>
+                <span>Accounts</span>
+              </div>
+              <div class="setup-step-node" id="step-node-4">
+                <div class="setup-step-number">4</div>
+                <span>Goals</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 1: Profile -->
+          <div class="setup-step-section active" id="setup-step-1">
+            <h2 style="margin-bottom: 0.5rem;">Create Your Profile</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Configure your basic details and local currency settings.</p>
+            <div class="avatar-upload-box">
+              <div class="avatar-preview-wrapper">
+                <img src="" alt="Avatar Preview" id="avatar-preview-img" class="avatar-preview-img" style="display: none;">
+                <svg id="avatar-placeholder-svg" class="avatar-placeholder-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+              </div>
+              <label for="setup-avatar-file" class="avatar-upload-btn">Upload Avatar</label>
+              <input type="file" id="setup-avatar-file" style="display: none;" accept="image/*">
+            </div>
+            <div class="form-group">
+              <label for="setup-displayname" class="form-label">Display Name</label>
+              <input type="text" id="setup-displayname" class="form-input" placeholder="e.g. Alex Johnson">
+              <div class="form-error" id="setup-displayname-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="setup-currency" class="form-label">Preferred Currency</label>
+              <select id="setup-currency" class="form-input">
+                <option value="INR" selected>INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step 2: Budget Allocation -->
+          <div class="setup-step-section" id="setup-step-2">
+            <h2 style="margin-bottom: 0.5rem;">Setup Monthly Budget</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Define how much you intend to spend and allocate limits by category.</p>
+            <div class="setup-budget-split">
+              <div>
+                <div class="form-group">
+                  <label for="setup-total-budget" class="form-label">Total Monthly Budget</label>
+                  <input type="number" id="setup-total-budget" class="form-input" value="30000" min="0">
+                  <div class="form-error" id="setup-total-budget-error"></div>
+                </div>
+                <h4 style="margin-bottom: 1rem; font-size: 0.95rem;">Category Allocation</h4>
+                <div class="budget-category-inputs" id="setup-budget-categories-list">
+                  <!-- Generated dynamically in JS -->
+                </div>
+              </div>
+              <div>
+                <h3 style="font-size: 1.1rem; text-align: center; margin-bottom: 1rem;">Allocated vs Left</h3>
+                <div style="height: 250px; position: relative;">
+                  <canvas id="setup-budget-chart"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 1rem; font-weight: 600; font-size: 0.9rem;" id="setup-budget-remaining-lbl">
+                  Remaining: ₹30,000
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Bank Accounts -->
+          <div class="setup-step-section" id="setup-step-3">
+            <h2 style="margin-bottom: 0.5rem;">Bank Accounts & Wallets</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Add bank deposits, credit cards, or cash wallets to begin tracking cashflows.</p>
+            
+            <div class="setup-accounts-list" id="setup-accounts-list-container">
+              <!-- Dynamically populated rows in JS -->
+            </div>
+            
+            <button type="button" class="btn btn-secondary" id="setup-add-account-btn" style="width: 100%; margin-top: 1rem;">
+              <span>+ Add Another Account</span>
+            </button>
+          </div>
+
+          <!-- Step 4: Goals -->
+          <div class="setup-step-section" id="setup-step-4">
+            <h2 style="margin-bottom: 0.5rem;">Define Saving Goals</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Setup up to 3 core milestones to fuel with budget savings.</p>
+            
+            <div class="setup-goals-list" id="setup-goals-list-container">
+              <!-- Dynamically populated goals in JS -->
+            </div>
+            
+            <button type="button" class="btn btn-secondary" id="setup-add-goal-btn" style="width: 100%; margin-top: 1rem;">
+              <span>+ Add Another Saving Goal</span>
+            </button>
+          </div>
+
+          <!-- Buttons Row -->
+          <div class="setup-buttons-row">
+            <button type="button" class="btn btn-ghost" id="setup-back-btn" disabled>Back</button>
+            <button type="button" class="btn btn-primary" id="setup-next-btn">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           4. DASHBOARD — HOME (/dashboard)
+           ========================================== -->
+      <section id="view-dashboard" class="view-section">
+        <div class="container">
+          
+          <div class="dashboard-header">
+            <div class="dashboard-user-greeting">
+              <img src="" alt="Avatar" class="dashboard-avatar-large" id="dashboard-avatar-img">
+              <div>
+                <h1 class="dashboard-greeting-title" id="dashboard-greeting-lbl">Good morning, Alex!</h1>
+                <div class="dashboard-date" id="dashboard-date-lbl">Monday, June 8, 2026</div>
+              </div>
+            </div>
+            <div class="dashboard-quick-actions">
+              <button id="dashboard-add-tx-btn" class="btn btn-primary">
+                <span>+ Add Transaction</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Summary cards -->
+          <div class="dashboard-stats-grid">
+            <!-- Total Balance Card -->
+            <div class="card glow">
+              <div class="stat-card-header">
+                <span>Total Balance</span>
+                <div class="stat-card-icon">💰</div>
+              </div>
+              <div class="stat-card-value" id="dash-stat-balance">₹0.00</div>
+              <div class="stat-card-trend" id="dash-stat-balance-trend">
+                <!-- Filled via JS -->
+              </div>
+            </div>
+            <!-- Income Card -->
+            <div class="card glow">
+              <div class="stat-card-header">
+                <span>Monthly Income</span>
+                <div class="stat-card-icon">📈</div>
+              </div>
+              <div class="stat-card-value" id="dash-stat-income">₹0.00</div>
+              <div class="stat-card-trend" id="dash-stat-income-trend">
+                <!-- Filled via JS -->
+              </div>
+            </div>
+            <!-- Expenses Card -->
+            <div class="card glow">
+              <div class="stat-card-header">
+                <span>Monthly Expenses</span>
+                <div class="stat-card-icon">📉</div>
+              </div>
+              <div class="stat-card-value" id="dash-stat-expense">₹0.00</div>
+              <div class="stat-card-trend" id="dash-stat-expense-trend">
+                <!-- Filled via JS -->
+              </div>
+            </div>
+            <!-- Savings Rate Card -->
+            <div class="card glow">
+              <div class="stat-card-header">
+                <span>Savings Rate</span>
+                <div class="stat-card-icon">🎯</div>
+              </div>
+              <div class="stat-card-value" id="dash-stat-savings">0%</div>
+              <div class="stat-card-trend" id="dash-stat-savings-trend">
+                <!-- Filled via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Mid sections: budgets vs transactions -->
+          <div class="dashboard-grid">
+            
+            <!-- Category Budgets Column -->
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.15rem;">Monthly Budget Progress</h3>
+                <a href="#/budget" class="btn btn-ghost" style="padding: 4px 8px; font-size: 0.85rem;">Manage Budgets</a>
+              </div>
+              <div class="budget-progress-list" id="dash-budget-list">
+                <!-- Category sliders generated in JS -->
+              </div>
+            </div>
+
+            <!-- Recent Transactions Column -->
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.15rem;">Recent Transactions</h3>
+                <a href="#/transactions" class="btn btn-ghost" style="padding: 4px 8px; font-size: 0.85rem;">View All</a>
+              </div>
+              <div class="transaction-list" id="dash-recent-transactions-list">
+                <!-- List values populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Charts Subgrid -->
+            <div class="dashboard-charts-row">
+              <div class="card">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Income vs Expenses (Last 6 Months)</h3>
+                <div class="chart-card-body">
+                  <canvas id="dash-line-chart"></canvas>
+                </div>
+              </div>
+              <div class="card">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Spending by Category</h3>
+                <div class="chart-card-body">
+                  <canvas id="dash-doughnut-chart"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           5. TRANSACTIONS PAGE (/transactions)
+           ========================================== -->
+      <section id="view-transactions" class="view-section">
+        <div class="container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <h1>Transactions Ledger</h1>
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="transactions-export-btn" class="btn btn-secondary">
+                <span>📤 Export CSV</span>
+              </button>
+              <button id="transactions-add-btn" class="btn btn-primary">
+                <span>+ Add Transaction</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Toolbar -->
+          <div class="card transactions-filters-card">
+            <div class="filters-grid">
+              <div class="form-group">
+                <label for="tx-filter-search" class="form-label">Search Transactions</label>
+                <input type="text" id="tx-filter-search" class="form-input" placeholder="Search by note, description...">
+              </div>
+              <div class="form-group">
+                <label for="tx-filter-category" class="form-label">Category</label>
+                <select id="tx-filter-category" class="form-input">
+                  <option value="All">All Categories</option>
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Health">Health</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="tx-filter-type" class="form-label">Transaction Type</label>
+                <select id="tx-filter-type" class="form-input">
+                  <option value="All">All Types</option>
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="tx-filter-daterange" class="form-label">Date Preset</label>
+                <select id="tx-filter-daterange" class="form-input">
+                  <option value="All" selected>All Time</option>
+                  <option value="ThisMonth">This Month</option>
+                  <option value="LastMonth">Last Month</option>
+                  <option value="Last90Days">Last 90 Days</option>
+                </select>
+              </div>
+              <button type="button" id="tx-filter-reset" class="btn btn-ghost" style="height: 44px; margin-bottom: 0;">
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Content -->
+          <div class="data-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-sort="date" id="th-sort-date">Date <span class="sort-indicator">▼</span></th>
+                  <th data-sort="description" id="th-sort-desc">Description <span class="sort-indicator"></span></th>
+                  <th data-sort="category" id="th-sort-cat">Category <span class="sort-indicator"></span></th>
+                  <th data-sort="account" id="th-sort-acc">Account <span class="sort-indicator"></span></th>
+                  <th data-sort="amount" id="th-sort-amt" style="text-align: right;">Amount <span class="sort-indicator"></span></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-table-rows">
+                <!-- Filled dynamically via JS -->
+              </tbody>
+            </table>
+            <!-- Pagination wrapper -->
+            <div class="pagination-row">
+              <div class="pagination-info" id="transactions-pagination-info">
+                Showing 1-10 of 15 transactions
+              </div>
+              <div class="pagination-controls" id="transactions-pagination-btns">
+                <!-- Dynamically generated buttons -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           6. BUDGET PAGE (/budget)
+           ========================================== -->
+      <section id="view-budget" class="view-section">
+        <div class="container">
+          <h1 style="margin-bottom: 1.5rem;">Budgets Planner</h1>
+          
+          <!-- Month Overview stats -->
+          <div class="card budget-overview-header glow">
+            <div>
+              <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;" id="budget-heading-month">Budget for June 2026</h2>
+              <p style="color: var(--text-secondary);" id="budget-desc-text">You have allocated 85% of your planned limits.</p>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Total Allocated Limit</div>
+              <div style="font-size: 2rem; font-weight: 800; color: var(--primary);" id="budget-summary-total">₹0</div>
+            </div>
+          </div>
+
+          <!-- Category cards grid -->
+          <div class="budget-cards-grid" id="budget-categories-cards-container">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Bottom charts: Month history -->
+          <div class="card" style="margin-top: 2rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Historical Spending (Budget vs Actual)</h3>
+            <div style="height: 320px; position: relative;">
+              <canvas id="budget-history-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           7. GOALS PAGE (/goals)
+           ========================================== -->
+      <section id="view-goals" class="view-section">
+        <div class="container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <h1>Financial Targets</h1>
+            <button id="goals-add-btn" class="btn btn-primary">
+              <span>+ Add Target Goal</span>
+            </button>
+          </div>
+
+          <!-- Goal cards grid -->
+          <div class="goals-grid" id="goals-active-container">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Achieved targets section -->
+          <div class="achieved-section" id="goals-achieved-section" style="display: none;">
+            <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;" class="text-gradient">Achieved Milestones 🏆</h2>
+            <div class="goals-grid" id="goals-achieved-container">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           8. REPORTS PAGE (/reports)
+           ========================================== -->
+      <section id="view-reports" class="view-section">
+        <div class="container">
+          <div class="reports-toolbar">
+            <h1>Reports & Analysis</h1>
+            <!-- Date presetter controls -->
+            <div class="custom-range-picker">
+              <div class="range-presets">
+                <button class="preset-btn active" data-preset="ThisMonth">This Month</button>
+                <button class="preset-btn" data-preset="LastMonth">Last Month</button>
+                <button class="preset-btn" data-preset="Last3Months">Last 3 Mos</button>
+                <button class="preset-btn" data-preset="ThisYear">This Year</button>
+                <button class="preset-btn" data-preset="Custom">Custom</button>
+              </div>
+              <div id="reports-custom-dates" style="display: none; align-items: center; gap: 0.5rem;">
+                <input type="date" id="reports-start-date">
+                <span>to</span>
+                <input type="date" id="reports-end-date">
+                <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" id="reports-apply-custom">Apply</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overview analytical summaries -->
+          <div class="dashboard-stats-grid">
+            <div class="card">
+              <div class="stat-card-header">Total Income</div>
+              <div class="stat-card-value text-gradient" id="reports-stat-income">₹0</div>
+            </div>
+            <div class="card">
+              <div class="stat-card-header">Total Expenses</div>
+              <div class="stat-card-value" style="color: var(--danger);" id="reports-stat-expense">₹0</div>
+            </div>
+            <div class="card">
+              <div class="stat-card-header">Net Savings</div>
+              <div class="stat-card-value" style="color: var(--success);" id="reports-stat-netsavings">₹0</div>
+            </div>
+            <div class="card">
+              <div class="stat-card-header">Savings Rate</div>
+              <div class="stat-card-value" style="color: var(--accent);" id="reports-stat-savingsrate">0%</div>
+            </div>
+          </div>
+
+          <!-- Biggest Expense Highlight -->
+          <div class="card biggest-expense-card" style="margin-bottom: 2rem;">
+            <div class="biggest-expense-badge">🔥 Biggest Cash Outflow</div>
+            <h3 style="font-size: 1.35rem; margin-bottom: 0.25rem;" id="reports-biggest-expense-title">Food & Catering</h3>
+            <p style="color: var(--text-secondary);" id="reports-biggest-expense-desc">You spent ₹0.00 in this period representing 0% of all expenses.</p>
+          </div>
+
+          <!-- Reports Charts Row -->
+          <div class="reports-charts-grid">
+            <!-- Monthly Comparison -->
+            <div class="card">
+              <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Cash Flow Comparison</h3>
+              <div class="chart-card-body">
+                <canvas id="reports-flow-chart"></canvas>
+              </div>
+            </div>
+            <!-- Category breakdown -->
+            <div class="card">
+              <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Expenses Allocation</h3>
+              <div class="chart-card-body">
+                <canvas id="reports-category-chart"></canvas>
+              </div>
+            </div>
+            <!-- Daily Line -->
+            <div class="card reports-line-chart-card">
+              <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Daily Cash-Out Trend</h3>
+              <div class="chart-card-body" style="height: 320px;">
+                <canvas id="reports-trend-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Insights Section -->
+          <div class="card">
+            <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Personal Financial Diagnostics</h3>
+            <div class="insights-list" id="reports-insights-container">
+              <!-- Dynamically structured diagnostic texts -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           9. SETTINGS PAGE (/settings)
+           ========================================== -->
+      <section id="view-settings" class="view-section">
+        <div class="container">
+          <h1 style="margin-bottom: 2rem;">Application Settings</h1>
+          
+          <div class="settings-grid">
+            <!-- Side panel -->
+            <div class="card settings-menu">
+              <button class="settings-menu-btn active" data-pane="settings-pane-profile">👤 Profile details</button>
+              <button class="settings-menu-btn" data-pane="settings-pane-security">🔑 Login Credentials</button>
+              <button class="settings-menu-btn" data-pane="settings-pane-notifications">🔔 Alerts Config</button>
+              <button class="settings-menu-btn" data-pane="settings-pane-appearance">🎨 Theme Customizer</button>
+              <button class="settings-menu-btn" data-pane="settings-pane-data">💾 Data Management</button>
+            </div>
+
+            <!-- Details Content panes -->
+            <div class="card" style="padding: 2rem;">
+              
+              <!-- Tab 1: Profile -->
+              <div class="settings-pane active" id="settings-pane-profile">
+                <h2 style="margin-bottom: 1.5rem;">Edit Profile</h2>
+                <form id="settings-profile-form">
+                  <div class="form-group" style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem;">
+                    <img src="" alt="Avatar" class="sidebar-avatar" style="width: 70px; height: 70px; border-width: 3px;" id="settings-profile-avatar-preview">
+                    <label for="settings-avatar-input" class="avatar-upload-btn">Change Photo</label>
+                    <input type="file" id="settings-avatar-input" style="display: none;" accept="image/*">
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-profile-name" class="form-label">Display Name</label>
+                    <input type="text" id="settings-profile-name" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-profile-email" class="form-label">Email Address</label>
+                    <input type="email" id="settings-profile-email" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-profile-currency" class="form-label">System Currency</label>
+                    <select id="settings-profile-currency" class="form-input">
+                      <option value="INR">INR (₹)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-profile-lang" class="form-label">Application Language (Dummy)</label>
+                    <select id="settings-profile-lang" class="form-input">
+                      <option value="en" selected>English</option>
+                      <option value="es">Español</option>
+                      <option value="fr">Français</option>
+                      <option value="hi">हिन्दी</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary" id="settings-profile-submit-btn">Save Changes</button>
+                </form>
+              </div>
+
+              <!-- Tab 2: Security -->
+              <div class="settings-pane" id="settings-pane-security">
+                <h2 style="margin-bottom: 1.5rem;">Change Password</h2>
+                <form id="settings-security-form">
+                  <div class="form-group">
+                    <label for="settings-pass-old" class="form-label">Current Password</label>
+                    <input type="password" id="settings-pass-old" class="form-input" placeholder="••••••••">
+                    <div class="form-error" id="settings-pass-old-error"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-pass-new" class="form-label">New Password</label>
+                    <input type="password" id="settings-pass-new" class="form-input" placeholder="Min 8 characters">
+                    <div class="strength-meter-bar">
+                      <div id="password-strength-fill" class="strength-meter-fill"></div>
+                    </div>
+                    <div id="password-strength-label" class="strength-meter-label">Password strength</div>
+                    <div class="form-error" id="settings-pass-new-error"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-pass-confirm" class="form-label">Confirm New Password</label>
+                    <input type="password" id="settings-pass-confirm" class="form-input" placeholder="••••••••">
+                    <div class="form-error" id="settings-pass-confirm-error"></div>
+                  </div>
+                  <button type="submit" class="btn btn-primary" id="settings-security-submit-btn">Update Password</button>
+                </form>
+              </div>
+
+              <!-- Tab 3: Notifications -->
+              <div class="settings-pane" id="settings-pane-notifications">
+                <h2 style="margin-bottom: 1.5rem;">Notification Toggles</h2>
+                <div class="settings-toggle-row">
+                  <div class="settings-toggle-info">
+                    <div class="settings-toggle-title">Budget Limit Warnings</div>
+                    <div class="settings-toggle-desc">Receive red screen alerts when category expenses exceed 90%.</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="settings-notify-budget" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="settings-toggle-row">
+                  <div class="settings-toggle-info">
+                    <div class="settings-toggle-title">Goal Target Reminders</div>
+                    <div class="settings-toggle-desc">Trigger warnings 3 days prior to target deadlines.</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="settings-notify-goals" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="settings-toggle-row">
+                  <div class="settings-toggle-info">
+                    <div class="settings-toggle-title">Weekly summary report</div>
+                    <div class="settings-toggle-desc">Display tips and advice triggers during Monday logins.</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="settings-notify-weekly" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Tab 4: Appearance -->
+              <div class="settings-pane" id="settings-pane-appearance">
+                <h2 style="margin-bottom: 1.5rem;">Visual Configuration</h2>
+                <div class="settings-toggle-row" style="margin-bottom: 1.5rem;">
+                  <div class="settings-toggle-info">
+                    <div class="settings-toggle-title">Dark/Light Palette Mode</div>
+                    <div class="settings-toggle-desc">Switch between night visual rendering and light layout.</div>
+                  </div>
+                  <button id="settings-theme-toggle" class="theme-toggle" type="button">
+                    <span id="settings-theme-toggle-icon">🌙</span>
+                  </button>
+                </div>
+                <div>
+                  <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Primary Accent Hue Presets</h3>
+                  <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem;">Select a theme color for visual banners and buttons.</p>
+                  <div class="accent-picker" id="appearance-accent-picker">
+                    <div class="accent-circle accent-circle-1 active" data-accent="1"></div>
+                    <div class="accent-circle accent-circle-2" data-accent="2"></div>
+                    <div class="accent-circle accent-circle-3" data-accent="3"></div>
+                    <div class="accent-circle accent-circle-4" data-accent="4"></div>
+                    <div class="accent-circle accent-circle-5" data-accent="5"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 5: Data Admin -->
+              <div class="settings-pane" id="settings-pane-data">
+                <h2 style="margin-bottom: 1.5rem;">Backup & Database Recovery</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                  Download your stored transactions records locally or upload a JSON backup copy to restore records. You may also purge records to clear memory.
+                </p>
+                <div class="settings-data-row">
+                  <button id="settings-data-export" class="btn btn-secondary">💾 Export JSON</button>
+                  <label for="settings-data-import-input" class="btn btn-secondary" style="cursor: pointer;">📤 Import JSON</label>
+                  <input type="file" id="settings-data-import-input" style="display: none;" accept=".json">
+                  <button id="settings-data-reset" class="btn btn-danger">⚠️ Reset Database</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           10. ABOUT PAGE (/about)
+           ========================================== -->
+      <section id="view-about" class="view-section">
+        <div class="container" style="max-width: 800px;">
+          <h1 style="margin-bottom: 1rem;">About FinTrack</h1>
+          <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+            FinTrack is a single page application built from the ground up utilizing web APIs and Vanilla JavaScript. We believe that tracking expenses should not require complex server configurations or cloud telemetry. Your private transaction ledgers reside purely locally on your device inside standard sandboxed browsers.
+          </p>
+
+          <!-- Core stats highlights -->
+          <div class="features-grid" style="margin-bottom: 3rem;">
+            <div class="card feature-card">
+              <div class="feature-icon-box">🛡️</div>
+              <h3>100% Client-Side</h3>
+              <p>Everything runs inside your immediate local sandbox. Zero telemetry headers ever leak out.</p>
+            </div>
+            <div class="card feature-card">
+              <div class="feature-icon-box">⏳</div>
+              <h3>Microsecond Snappiness</h3>
+              <p>Vanilla Javascript DOM rendering provides microsecond updates. Absolutely no bloated frameworks.</p>
+            </div>
+          </div>
+
+          <!-- FAQ Accordion -->
+          <h2 style="margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+          <div class="faq-accordion" id="faq-accordion-box">
+            <!-- FAQ 1 -->
+            <div class="faq-item">
+              <button class="faq-question-btn">
+                <span>Where is my transaction information stored?</span>
+                <span class="faq-chevron">▼</span>
+              </button>
+              <div class="faq-answer">
+                Your data is saved directly in your web browser's <code>localStorage</code> database sandbox. No server databases are synced.
+              </div>
+            </div>
+            <!-- FAQ 2 -->
+            <div class="faq-item">
+              <button class="faq-question-btn">
+                <span>Will my data be wiped if I close my browser tab?</span>
+                <span class="faq-chevron">▼</span>
+              </button>
+              <div class="faq-answer">
+                No, <code>localStorage</code> persists even after browser shutdowns. If you clear browser history cache completely, ensure you download a JSON backup first.
+              </div>
+            </div>
+            <!-- FAQ 3 -->
+            <div class="faq-item">
+              <button class="faq-question-btn">
+                <span>How do I export files to open in Excel?</span>
+                <span class="faq-chevron">▼</span>
+              </button>
+              <div class="faq-answer">
+                Use the "Export CSV" buttons inside our Transactions Ledger to instantly request standard spreadsheet downloads.
+              </div>
+            </div>
+            <!-- FAQ 4 -->
+            <div class="faq-item">
+              <button class="faq-question-btn">
+                <span>What are budget warning flags?</span>
+                <span class="faq-chevron">▼</span>
+              </button>
+              <div class="faq-answer">
+                If an expense pushes a category budget above 75% or 100%, an instant advisory warning banner triggers in the top-right corner.
+              </div>
+            </div>
+            <!-- FAQ 5 -->
+            <div class="faq-item">
+              <button class="faq-question-btn">
+                <span>How can I run a full data reset?</span>
+                <span class="faq-chevron">▼</span>
+              </button>
+              <div class="faq-answer">
+                Navigate to <b>Settings -> Data Management</b> and select the "Reset Database" option. This wipes storage cache cleanly.
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form Section -->
+          <div class="card" style="margin-top: 3rem; padding: 2rem;">
+            <h2 style="margin-bottom: 0.5rem;">Send Us Feedback</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Have suggestion notes? Submit them here. Saved locally in client mocks.</p>
+            <form id="about-contact-form">
+              <div class="form-group">
+                <label for="contact-name" class="form-label">Name</label>
+                <input type="text" id="contact-name" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="contact-email" class="form-label">Email</label>
+                <input type="email" id="contact-email" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="contact-message" class="form-label">Message</label>
+                <textarea id="contact-message" class="form-input" style="height: 100px; resize: vertical;" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </form>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==========================================
+           11. 404 FALLBACK PAGE
+           ========================================== -->
+      <section id="view-404" class="view-section">
+        <div class="fallback-404">
+          <div class="illustration-404">🔍</div>
+          <h2 class="title-404 text-gradient">Route Not Found</h2>
+          <p class="desc-404">The destination link you are attempting to access does not exist or has been relocated inside our client directories.</p>
+          <a href="#/dashboard" class="btn btn-primary">Return to Dashboard</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Tab Navigation: visible only on mobile screens when logged in -->
+  <nav id="mobile-nav-bar" class="mobile-nav-bar" style="display: none;" aria-label="Mobile Navigation">
+    <a href="#/dashboard" class="mobile-nav-link" id="mobile-nav-dashboard">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="#/transactions" class="mobile-nav-link" id="mobile-nav-transactions">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+      <span>Ledger</span>
+    </a>
+    <a href="#/budget" class="mobile-nav-link" id="mobile-nav-budget">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <span>Budgets</span>
+    </a>
+    <a href="#/goals" class="mobile-nav-link" id="mobile-nav-goals">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+      <span>Goals</span>
+    </a>
+    <a href="#/reports" class="mobile-nav-link" id="mobile-nav-reports">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+      <span>Reports</span>
+    </a>
+  </nav>
+
+  <!-- Reusable Confirmation Modal -->
+  <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="confirm-modal-title" class="modal-title">Delete Action</h3>
+        <button type="button" class="modal-close" id="confirm-modal-close" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message">Are you absolutely sure you wish to perform this destructive action? This action is permanent.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="confirm-modal-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirm-modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reusable Transaction Modal -->
+  <div id="transaction-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tx-modal-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="tx-modal-title" class="modal-title">Add Transaction</h3>
+        <button type="button" class="modal-close" id="tx-modal-close" aria-label="Close modal">×</button>
+      </div>
+      <form id="transaction-form" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="tx-id-input">
+          
+          <!-- Transaction Type Toggle -->
+          <div class="form-group" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <label class="checkbox-label btn btn-ghost" style="flex: 1; border: 1px solid var(--border-color-strong); padding: 8px;" id="tx-type-income-btn">
+              <input type="radio" name="tx-type" id="tx-type-income" value="income" class="sr-only">
+              📈 Income
+            </label>
+            <label class="checkbox-label btn btn-ghost" style="flex: 1; border: 1px solid var(--border-color-strong); padding: 8px;" id="tx-type-expense-btn">
+              <input type="radio" name="tx-type" id="tx-type-expense" value="expense" class="sr-only" checked>
+              📉 Expense
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="tx-amount-input" class="form-label">Amount</label>
+            <input type="number" id="tx-amount-input" class="form-input" placeholder="0.00" min="0.01" step="0.01">
+            <div class="form-error" id="tx-amount-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="tx-description-input" class="form-label">Description / Note</label>
+            <input type="text" id="tx-description-input" class="form-input" placeholder="e.g. Weekly Groceries">
+            <div class="form-error" id="tx-description-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="tx-category-input" class="form-label">Category</label>
+            <select id="tx-category-input" class="form-input">
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Health">Health</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Bills">Bills</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tx-account-input" class="form-label">Source Account</label>
+            <select id="tx-account-input" class="form-input">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tx-date-input" class="form-label">Transaction Date</label>
+            <input type="date" id="tx-date-input" class="form-input">
+            <div class="form-error" id="tx-date-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="tx-recurring-input" class="checkbox-input">
+              <span>Recurring Monthly Transaction</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="tx-modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="tx-modal-submit-btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reusable Forgot Password Modal -->
+  <div id="forgot-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="forgot-modal-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="forgot-modal-title" class="modal-title">Reset Password</h3>
+        <button type="button" class="modal-close" id="forgot-modal-close" aria-label="Close modal">×</button>
+      </div>
+      <form id="forgot-form" novalidate>
+        <div class="modal-body">
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.25rem;">
+            Provide your registered email address below, and we will send a password reset validation link to your inbox.
+          </p>
+          <div class="form-group">
+            <label for="forgot-email-input" class="form-label">Email Address</label>
+            <input type="email" id="forgot-email-input" class="form-input" placeholder="alex@example.com">
+            <div class="form-error" id="forgot-email-error"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="forgot-modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="forgot-modal-submit-btn">Send Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reusable Goal Funds Contribution Modal -->
+  <div id="goal-funds-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-funds-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="goal-funds-title" class="modal-title">Add Goal Funds</h3>
+        <button type="button" class="modal-close" id="goal-funds-close" aria-label="Close modal">×</button>
+      </div>
+      <form id="goal-funds-form" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="goal-funds-id-input">
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Transfer budget savings into your goal tracker. This amount will be deducted from your selected wallet account.
+          </p>
+
+          <div class="form-group">
+            <label for="goal-funds-amount-input" class="form-label">Transfer Amount</label>
+            <input type="number" id="goal-funds-amount-input" class="form-input" placeholder="0.00" min="1" step="1">
+            <div class="form-error" id="goal-funds-amount-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="goal-funds-account-input" class="form-label">Deduct From Account</label>
+            <select id="goal-funds-account-input" class="form-input">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="goal-funds-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="goal-funds-submit-btn">Deposit Funds</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reusable Goal Creator / Editor Modal -->
+  <div id="goal-editor-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-editor-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="goal-editor-title" class="modal-title">Create Saving Target</h3>
+        <button type="button" class="modal-close" id="goal-editor-close" aria-label="Close modal">×</button>
+      </div>
+      <form id="goal-editor-form" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="goal-editor-id-input">
+          
+          <div class="form-group">
+            <label for="goal-editor-name-input" class="form-label">Goal Target Name</label>
+            <input type="text" id="goal-editor-name-input" class="form-input" placeholder="e.g. New Laptop">
+            <div class="form-error" id="goal-editor-name-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="goal-editor-amount-input" class="form-label">Target Amount</label>
+            <input type="number" id="goal-editor-amount-input" class="form-input" placeholder="e.00" min="1" step="1">
+            <div class="form-error" id="goal-editor-amount-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="goal-editor-date-input" class="form-label">Deadline Target Date</label>
+            <input type="date" id="goal-editor-date-input" class="form-input">
+            <div class="form-error" id="goal-editor-date-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Goal Icon Badge</label>
+            <div class="accent-picker" id="goal-editor-icon-picker" style="gap: 0.5rem;">
+              <button type="button" class="icon-picker-btn active" style="flex: 1; padding: 4px;" data-icon="🎯">🎯</button>
+              <button type="button" class="icon-picker-btn" style="flex: 1; padding: 4px;" data-icon="💻">💻</button>
+              <button type="button" class="icon-picker-btn" style="flex: 1; padding: 4px;" data-icon="🚗">🚗</button>
+              <button type="button" class="icon-picker-btn" style="flex: 1; padding: 4px;" data-icon="🏠">🏠</button>
+              <button type="button" class="icon-picker-btn" style="flex: 1; padding: 4px;" data-icon="✈️">✈️</button>
+              <button type="button" class="icon-picker-btn" style="flex: 1; padding: 4px;" data-icon="🎒">🎒</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="goal-editor-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="goal-editor-submit-btn">Save Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Back to top button -->
+  <button id="scroll-top-btn" class="scroll-top-btn" title="Back to top" aria-label="Back to Top">▲</button>
+
+  <!-- Vanilla App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
